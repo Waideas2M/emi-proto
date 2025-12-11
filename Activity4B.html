@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity 3B - eMi</title>
+    <title>Activity 4B - eMi</title>
     <style>
         * {
             margin: 0;
@@ -504,6 +504,126 @@
                 width: auto;
             }
         }
+
+        /* === Activity4B: line matching cards and handles === */
+
+        .match-stage {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .match-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 220px);
+            grid-auto-rows: 150px;
+            column-gap: 160px;
+            row-gap: 72px;
+            align-items: center;
+            justify-items: center;
+        }
+
+        .card {
+            position: relative;
+            width: 190px;
+            height: 150px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(6px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            z-index: 3; /* cards above lines */
+        }
+
+        .card-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+
+        .card-inner img {
+            width: auto;
+            height: auto;
+            max-width: 75%;
+            max-height: 75%;
+            object-fit: contain;
+            display: block;
+            margin: auto;
+        }
+
+        .card-handle {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.20);
+            cursor: pointer;
+            transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+        }
+
+        .card-left .card-handle  { right: -16px; }
+
+        .card-right .card-handle { left: -16px; }
+
+        .card-handle:active {
+            transform: translateY(-50%) scale(0.92);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        .card-connected {
+            transform: scale(1.03);
+            box-shadow:
+                0 0 0 3px rgba(244, 200, 64, 0.95),
+                0 8px 16px rgba(0, 0, 0, 0.18);
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out;
+        }
+
+        .connection-layer {
+            position: absolute;
+            inset: 0;
+            overflow: visible;
+            pointer-events: none;
+            z-index: 2; /* lines above background but below cards */
+        }
+
+        .connection-line {
+            fill: none;
+            stroke: #f4c840;
+            stroke-width: 6;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.25));
+            transition: stroke-width 0.2s ease-out, opacity 0.2s ease-out;
+        }
+
+        .connection-line.active {
+            opacity: 0.9;
+        }
+
+        .connection-line.connected {
+            stroke-width: 7;
+        }
+
+        @keyframes linePulse {
+            0%   { stroke-width: 7; }
+            50%  { stroke-width: 10; }
+            100% { stroke-width: 7; }
+        }
+
+        .connection-line.pulse {
+            animation: linePulse 0.25s ease-out;
+        }
     </style>
 </head>
 <body class="fade-start">
@@ -514,48 +634,64 @@
             <div class="toolbar-actions">
                 <button class="tool-action" aria-label="Action 1" onclick="fadeNavigate('Activity1B.html');">1</button>
                 <button class="tool-action" aria-label="Action 2" onclick="fadeNavigate('Activity2B.html');">2</button>
-                <button class="tool-action active" aria-label="Action 3" onclick="fadeNavigate('Activity3B.html');">3</button>
-                <button class="tool-action" aria-label="Action 4" onclick="fadeNavigate('Activity4B.html');">4</button>
+                <button class="tool-action" aria-label="Action 3" onclick="fadeNavigate('Activity3B.html');">3</button>
+                <button class="tool-action active" aria-label="Action 4" onclick="fadeNavigate('Activity4B.html');">4</button>
             </div>
             <button class="back-button" aria-label="Go back" onclick="fadeNavigate('index.html');">
                 <img src="images/back-icon.svg" alt="Back" class="back-icon" />
             </button>
         </div>
 
-        <!-- Middle Panel - Forest with Drag-and-Drop Toys -->
+        <!-- Middle Panel - Line Matching Game -->
         <div class="main-panel">
             <img src="images/Mascot-side2b.jpg" class="forest-bg" alt="Forest background" />
-            <div class="toy-stage" id="toy-stage">
-                <!-- Toys at the top - ADJUST POSITIONS TO MATCH FIGMA -->
-                <div class="toy toy-bear float" data-toy="bear">
-                    <img src="images/bear.png" alt="Bear toy" />
-                </div>
-                <div class="toy toy-drum float-delay-1" data-toy="drum">
-                    <img src="images/drum.png" alt="Drum toy" />
-                </div>
-                <div class="toy toy-plane float-delay-2" data-toy="plane">
-                    <img src="images/plane.png" alt="Plane toy" />
-                </div>
-                <div class="toy toy-ball float-delay-3" data-toy="ball">
-                    <img src="images/Ball.png" alt="Ball toy" />
-                </div>
+            <div class="match-stage" id="match-stage">
+                <svg class="connection-layer" id="connection-layer"></svg>
 
-                <!-- Box container near bottom center - ADJUST POSITION TO MATCH FIGMA -->
-                <div class="box-container" id="box-container">
-                    <img src="images/box.png" alt="Box" class="box-image" id="box-image" />
-                    
-                    <!-- In-box images - initially hidden -->
-                    <img src="images/bear-in-box.png" alt="Bear in box" class="toy-in-box" data-toy="bear" />
-                    <img src="images/drum-in-box.png" alt="Drum in box" class="toy-in-box" data-toy="drum" />
-                    <img src="images/plane-in-box.png" alt="Plane in box" class="toy-in-box" data-toy="plane" />
-                    <img src="images/ball-in-box.png" alt="Ball in box" class="toy-in-box" data-toy="ball" />
-                    
-                    <!-- Sparkle effect layer -->
-                    <div class="sparkle-layer" id="sparkle-layer">
-                        <div class="sparkle sparkle-1"></div>
-                        <div class="sparkle sparkle-2"></div>
-                        <div class="sparkle sparkle-3"></div>
-                        <div class="sparkle sparkle-4"></div>
+                <div class="match-grid">
+                    <!-- Row 1 -->
+                    <div class="card card-left" data-id="elephant">
+                        <div class="card-inner">
+                            <img src="images/elephant.png" alt="Elephant">
+                        </div>
+                        <button class="card-handle" type="button" aria-label="Connect elephant"></button>
+                    </div>
+
+                    <div class="card card-right" data-id="icecream">
+                        <div class="card-inner">
+                            <img src="images/icecream.png" alt="Ice cream">
+                        </div>
+                        <button class="card-handle" type="button" aria-label="Connect ice cream"></button>
+                    </div>
+
+                    <!-- Row 2 -->
+                    <div class="card card-left" data-id="cheetha">
+                        <div class="card-inner">
+                            <img src="images/cheetha.png" alt="Mouse">
+                        </div>
+                        <button class="card-handle" type="button" aria-label="Connect mouse"></button>
+                    </div>
+
+                    <div class="card card-right" data-id="mouse">
+                        <div class="card-inner">
+                            <img src="images/mouse.png" alt="Cheetah">
+                        </div>
+                        <button class="card-handle" type="button" aria-label="Connect cheetah"></button>
+                    </div>
+
+                    <!-- Row 3 -->
+                    <div class="card card-left" data-id="sun">
+                        <div class="card-inner">
+                            <img src="images/sun.png" alt="Sun">
+                        </div>
+                        <button class="card-handle" type="button" aria-label="Connect sun"></button>
+                    </div>
+
+                    <div class="card card-right" data-id="turtle">
+                        <div class="card-inner">
+                            <img src="images/turtle.png" alt="Turtle">
+                        </div>
+                        <button class="card-handle" type="button" aria-label="Connect turtle"></button>
                     </div>
                 </div>
             </div>
@@ -565,9 +701,8 @@
         <div class="side-panel">
             <img src="images/Mascot-side.jpg" class="panel-image" alt="Mascot" />
             <div class="text-content">
-                <p>Look at the toys!</p>
-                <p>Can you find the one that starts with B…</p>
-                <p>drag it into the B box?</p>
+                <p>Can you find what's opposite?</p>
+                <p>Draw a line to match them!</p>
             </div>
         </div>
     </div>
@@ -586,146 +721,175 @@
             }, 150);
         }
 
-        // Drag-and-drop logic
-        const toyStage = document.getElementById('toy-stage');
-        const boxContainer = document.getElementById('box-container');
-        const boxImage = document.getElementById('box-image');
-        const sparkleLayer = document.getElementById('sparkle-layer');
-        const toys = document.querySelectorAll('.toy');
-        
-        let hasDroppedOnce = false;
-        let activeDrag = null;
-        let dragOffset = { x: 0, y: 0 };
+        // ===== Activity4B: matching lines (free connections) =====
 
-        // Store initial positions for snap-back
-        const initialPositions = new Map();
-        toys.forEach(toy => {
-            const rect = toy.getBoundingClientRect();
-            const stageRect = toyStage.getBoundingClientRect();
-            initialPositions.set(toy, {
-                left: toy.offsetLeft,
-                top: toy.offsetTop
+        const connections = new Map(); // handle -> { leftHandle, rightHandle, path }
+        let activeLine = null;
+        let activeSourceHandle = null;
+        let activeStart = null;
+        let connectionLayer = null;
+        let handles = [];
+
+        function toSvgCoords(clientX, clientY) {
+            const svgRect = connectionLayer.getBoundingClientRect();
+            return {
+                x: clientX - svgRect.left,
+                y: clientY - svgRect.top
+            };
+        }
+
+        function getHandleCenter(handle) {
+            const rect = handle.getBoundingClientRect();
+            return toSvgCoords(rect.left + rect.width / 2, rect.top + rect.height / 2);
+        }
+
+        function updateActiveLine(clientX, clientY) {
+            if (!activeLine || !activeStart) return;
+            const end = toSvgCoords(clientX, clientY);
+            const midX = (activeStart.x + end.x) / 2;
+            const d = `
+                M ${activeStart.x} ${activeStart.y}
+                Q ${midX} ${activeStart.y} ${end.x} ${end.y}
+            `;
+            activeLine.setAttribute('d', d);
+        }
+
+        function removeConnectionForHandle(handle) {
+            const existing = connections.get(handle);
+            if (!existing) return;
+            const { leftHandle, rightHandle, path } = existing;
+            connections.delete(leftHandle);
+            connections.delete(rightHandle);
+            if (path && path.parentNode) {
+                path.parentNode.removeChild(path);
+            }
+            [leftHandle, rightHandle].forEach(h => {
+                const card = h.closest('.card');
+                if (card) card.classList.remove('card-connected');
             });
-        });
-
-        // Check if two rectangles overlap
-        function checkOverlap(rect1, rect2) {
-            return !(
-                rect1.right < rect2.left ||
-                rect1.left > rect2.right ||
-                rect1.bottom < rect2.top ||
-                rect1.top > rect2.bottom
-            );
         }
 
-        // Handle pointer down (start drag)
-        function handlePointerDown(e) {
-            if (hasDroppedOnce) return;
-            if (e.target.closest('.toy').classList.contains('disabled')) return;
+        function createConnection(leftHandle, rightHandle, fromTempPath) {
+            removeConnectionForHandle(leftHandle);
+            removeConnectionForHandle(rightHandle);
 
-            const toy = e.target.closest('.toy');
-            if (!toy) return;
+            const start = getHandleCenter(leftHandle);
+            const end = getHandleCenter(rightHandle);
+            const midX = (start.x + end.x) / 2;
 
-            e.preventDefault();
-            activeDrag = toy;
-            
-            const toyRect = toy.getBoundingClientRect();
-            const stageRect = toyStage.getBoundingClientRect();
-            
-            // Calculate offset from pointer to toy's top-left corner
-            dragOffset.x = e.clientX - toyRect.left;
-            dragOffset.y = e.clientY - toyRect.top;
+            const path = fromTempPath || document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            path.setAttribute('class', 'connection-line connected pulse');
+            const d = `
+                M ${start.x} ${start.y}
+                Q ${midX} ${start.y} ${end.x} ${end.y}
+            `;
+            path.setAttribute('d', d);
 
-            toy.classList.add('dragging');
-            toy.setPointerCapture(e.pointerId);
-        }
-
-        // Handle pointer move (during drag)
-        function handlePointerMove(e) {
-            if (!activeDrag) return;
-
-            const stageRect = toyStage.getBoundingClientRect();
-            
-            // Calculate new position relative to toy-stage
-            let newX = e.clientX - stageRect.left - dragOffset.x;
-            let newY = e.clientY - stageRect.top - dragOffset.y;
-
-            // Constrain to stage bounds
-            newX = Math.max(0, Math.min(newX, stageRect.width - activeDrag.offsetWidth));
-            newY = Math.max(0, Math.min(newY, stageRect.height - activeDrag.offsetHeight));
-
-            activeDrag.style.left = newX + 'px';
-            activeDrag.style.top = newY + 'px';
-        }
-
-        // Handle pointer up (end drag)
-        function handlePointerUp(e) {
-            if (!activeDrag) return;
-
-            const toy = activeDrag;
-            const toyRect = toy.getBoundingClientRect();
-            const boxRect = boxContainer.getBoundingClientRect();
-
-            toy.classList.remove('dragging');
-            toy.releasePointerCapture(e.pointerId);
-
-            // Check if toy overlaps with box
-            if (checkOverlap(toyRect, boxRect) && !hasDroppedOnce) {
-                // Successful drop!
-                hasDroppedOnce = true;
-                const toyType = toy.getAttribute('data-toy');
-
-                // Hide the dragged toy
-                toy.classList.add('hidden');
-
-                // Hide the empty box image
-                boxImage.classList.add('hidden');
-
-                // Show the corresponding in-box image
-                const inBoxImage = document.querySelector(`.toy-in-box[data-toy="${toyType}"]`);
-                if (inBoxImage) {
-                    inBoxImage.classList.add('visible');
-                }
-
-                // Trigger box impact animation
-                boxContainer.classList.add('impact');
-                boxContainer.addEventListener('animationend', () => {
-                    boxContainer.classList.remove('impact');
-                }, { once: true });
-
-                // Trigger sparkle animation
-                sparkleLayer.classList.add('sparkle-active');
-                sparkleLayer.addEventListener('animationend', () => {
-                    sparkleLayer.classList.remove('sparkle-active');
-                }, { once: true });
-
-                // Disable all other toys
-                toys.forEach(otherToy => {
-                    if (otherToy !== toy) {
-                        otherToy.classList.add('frozen', 'disabled');
-                    }
-                });
-            } else {
-                // Unsuccessful drop - snap back to original position
-                const initialPos = initialPositions.get(toy);
-                if (initialPos) {
-                    toy.style.left = initialPos.left + 'px';
-                    toy.style.top = initialPos.top + 'px';
-                }
+            if (!fromTempPath) {
+                connectionLayer.appendChild(path);
             }
 
-            activeDrag = null;
+            const conn = { leftHandle, rightHandle, path };
+            connections.set(leftHandle, conn);
+            connections.set(rightHandle, conn);
+
+            [leftHandle, rightHandle].forEach(h => {
+                const card = h.closest('.card');
+                if (card) card.classList.add('card-connected');
+            });
+
+            path.addEventListener('animationend', () => {
+                path.classList.remove('pulse');
+            }, { once: true });
         }
 
-        // Attach event listeners to each toy
-        toys.forEach(toy => {
-            toy.addEventListener('pointerdown', handlePointerDown);
-        });
+        function resetActive() {
+            activeLine = null;
+            activeSourceHandle = null;
+            activeStart = null;
+        }
 
-        // Global pointer move and up handlers
-        document.addEventListener('pointermove', handlePointerMove);
-        document.addEventListener('pointerup', handlePointerUp);
-        document.addEventListener('pointercancel', handlePointerUp);
+        // Initialize after DOM is ready
+        window.addEventListener('load', () => {
+            connectionLayer = document.getElementById('connection-layer');
+            handles = connectionLayer
+                ? Array.from(document.querySelectorAll('.card-handle'))
+                : [];
+
+            if (connectionLayer && handles.length) {
+                handles.forEach(handle => {
+                handle.addEventListener('pointerdown', e => {
+                    e.preventDefault();
+                    activeSourceHandle = handle;
+
+                    // --- NEW LOGIC: if this handle already has a connection, tapping removes it ---
+                    const existing = connections.get(handle);
+                    if (existing) {
+                        removeConnectionForHandle(handle);
+                        activeSourceHandle = null;
+                        activeStart = null;
+                        return;
+                    }
+                    // ------------------------------------------------------------------------------
+
+                    activeStart = getHandleCenter(handle);
+
+                    activeLine = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    activeLine.setAttribute('class', 'connection-line active');
+                    connectionLayer.appendChild(activeLine);
+
+                    updateActiveLine(e.clientX, e.clientY);
+                    handle.setPointerCapture(e.pointerId);
+
+                    const move = evt => {
+                        updateActiveLine(evt.clientX, evt.clientY);
+                    };
+
+                    const up = evt => {
+                        handle.releasePointerCapture(evt.pointerId);
+                        handle.removeEventListener('pointermove', move);
+                        handle.removeEventListener('pointerup', up);
+                        handle.removeEventListener('pointercancel', up);
+
+                        const targetElem = document.elementFromPoint(evt.clientX, evt.clientY);
+                        const targetHandle = targetElem && targetElem.closest('.card-handle');
+
+                        if (!targetHandle || targetHandle === activeSourceHandle) {
+                            if (activeLine && activeLine.parentNode) {
+                                activeLine.parentNode.removeChild(activeLine);
+                            }
+                            resetActive();
+                            return;
+                        }
+
+                        const sourceCard = activeSourceHandle.closest('.card');
+                        const targetCard = targetHandle.closest('.card');
+                        const sourceIsLeft = sourceCard.classList.contains('card-left');
+                        const targetIsLeft = targetCard.classList.contains('card-left');
+
+                        // Only connect left ↔ right
+                        if (sourceIsLeft === targetIsLeft) {
+                            if (activeLine && activeLine.parentNode) {
+                                activeLine.parentNode.removeChild(activeLine);
+                            }
+                            resetActive();
+                            return;
+                        }
+
+                        const leftHandle = sourceIsLeft ? activeSourceHandle : targetHandle;
+                        const rightHandle = sourceIsLeft ? targetHandle : activeSourceHandle;
+
+                        createConnection(leftHandle, rightHandle, activeLine);
+                        resetActive();
+                    };
+
+                    handle.addEventListener('pointermove', move);
+                    handle.addEventListener('pointerup', up);
+                    handle.addEventListener('pointercancel', up);
+                });
+                });
+            }
+        });
     </script>
 </body>
 </html>
