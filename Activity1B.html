@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Page - eMi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #191919;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            opacity: 1;
+            transition: opacity 0.25s ease;
+        }
+
+        body.fade-start {
+            opacity: 0;
+        }
+
+        body.fade-out {
+            opacity: 0;
+        }
+
+        .activity-page {
+            width: 100vw;
+            height: 100vh;
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .sidebar {
+            width: 80px;
+            flex: 0 0 auto;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(37, 41, 45, 1) 0%, rgba(63, 73, 82, 1) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0;
+        }
+
+        .logo-image {
+            width: 80px;
+            height: 80px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .back-button {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 24px auto;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .back-button:hover {
+            background-color: #191919;
+        }
+
+        .back-button:active {
+            background-color: #191919;
+            border: 1px solid #F8CB16;
+            transform: scale(0.97);
+        }
+
+        .back-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .tool-action {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+            background-color: rgba(0, 0, 0, 0.2);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: #FFFFFF;
+            line-height: 1;
+        }
+
+        .tool-action.active {
+            background-color: #191919;
+            border: 1px solid #F8CB16;
+        }
+
+        .tool-action:hover {
+            background-color: #191919;
+        }
+
+        .tool-action:active {
+            background-color: #191919;
+            border: 1px solid #F8CB16;
+            transform: scale(0.97);
+        }
+
+        .main-panel {
+            flex: 2;
+            min-width: 300px;
+            height: 100%;
+            background-color: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .playground-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+        }
+
+        .playground-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            border-radius: inherit;
+            display: block;
+        }
+
+        .hotspot {
+            position: absolute;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        /* Hotspot positions calculated from Figma coordinates */
+        /* Playground image dimensions: 1150x818 */
+        /* Converting absolute positions to percentages */
+        /* hotspot-slide: x:244, y:143, w:274, h:336 */
+        .hotspot-slide {
+            left: 21.22%;
+            top: 17.48%;
+            width: 23.83%;
+            height: 41.08%;
+        }
+
+        /* hotspot-sandbox: x:103, y:483, w:418, h:288 */
+        .hotspot-sandbox {
+            left: 8.96%;
+            top: 59.05%;
+            width: 36.35%;
+            height: 35.21%;
+        }
+
+        /* hotspot-swing (One over the slide): x:525, y:117, w:341, h:362 */
+        .hotspot-swing {
+            left: 45.65%;
+            top: 14.30%;
+            width: 29.65%;
+            height: 44.25%;
+        }
+
+        .side-panel {
+            flex: 0 0 auto;
+            width: 304px;
+            min-width: 200px;
+            max-width: 400px;
+            height: 100%;
+            background-color: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .panel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            border-radius: inherit;
+            display: block;
+        }
+
+        .text-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 40px;
+            pointer-events: none;
+        }
+
+        .text-content p {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            line-height: 1.4;
+            letter-spacing: -0.02em;
+            color: #191919;
+            text-align: left;
+            margin: 0;
+            width: 100%;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 1024px) {
+            .side-panel {
+                min-width: 150px;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body class="fade-start">
+    <div class="activity-page">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <img src="images/eMi Logo.svg" alt="eMi logo" class="logo-image" />
+            <div class="toolbar-actions">
+                <button class="tool-action active" aria-label="Action 1" onclick="fadeNavigate('Activity1B.html');">1</button>
+                <button class="tool-action" aria-label="Action 2" onclick="fadeNavigate('Activity2B.html');">2</button>
+                <button class="tool-action" aria-label="Action 3">3</button>
+            </div>
+            <button class="back-button" aria-label="Go back" onclick="fadeNavigate('Activity1A.html');">
+                <img src="images/back-icon.svg" alt="Back" class="back-icon" />
+            </button>
+        </div>
+
+        <!-- Middle Panel - Playground Illustration -->
+        <div class="main-panel">
+            <div class="playground-container">
+                <img src="images/playground.jpg" class="playground-image" alt="Playground" id="playground-img" />
+                <button class="hotspot hotspot-sandbox" aria-label="Sandbox" data-image="images/sandbox.jpg"></button>
+                <button class="hotspot hotspot-slide" aria-label="Slide" data-image="images/slide.jpg"></button>
+                <button class="hotspot hotspot-swing" aria-label="Swing" data-image="images/swing.jpg"></button>
+            </div>
+        </div>
+
+        <!-- Right Panel - Mascot Illustration -->
+        <div class="side-panel">
+            <img src="images/Mascot-side.jpg" class="panel-image" alt="Mascot" />
+            <div class="text-content">
+                <p>Look at this fun play area!</p>
+                <p>Which one do you want to play on?</p>
+                <p>Tell me… the slide, the swing, or the sandbox?</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fade in on page load
+        window.addEventListener('load', () => {
+            document.body.classList.remove('fade-start');
+        });
+
+        // Helper for fade + navigate
+        function fadeNavigate(url) {
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 250);
+        }
+
+        const playgroundContainer = document.querySelector('.playground-container');
+        const playgroundImg = document.getElementById('playground-img');
+        const hotspots = document.querySelectorAll('.hotspot');
+        const defaultImage = 'images/playground.jpg';
+
+        // Add click handlers to each hotspot
+        hotspots.forEach(hotspot => {
+            hotspot.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const imagePath = this.getAttribute('data-image');
+                playgroundImg.src = imagePath;
+            });
+        });
+
+        // Click on container (but not on hotspots) to restore default image
+        playgroundContainer.addEventListener('click', function(e) {
+            // Only restore if clicking directly on the container or image, not on hotspots
+            if (e.target === playgroundContainer || e.target === playgroundImg) {
+                playgroundImg.src = defaultImage;
+            }
+        });
+    </script>
+</body>
+</html>
+
