@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity 3B - eMi</title>
+    <title>Activity 5B - eMi</title>
     <style>
         * {
             margin: 0;
@@ -504,6 +504,148 @@
                 width: auto;
             }
         }
+
+        /* ===== Activity5B: Letter tracing styles ===== */
+
+        .tracing-stage {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+
+        /* scale svg to 50% smaller than before */
+        .tracing-svg {
+            width: min(320px, 55%);
+            height: auto;
+            touch-action: none;
+            pointer-events: auto;
+        }
+
+        /* BOLD, TOUCH-FRIENDLY M STROKES */
+        #letter-base {
+            fill: none;
+            stroke: #ffffff;
+            stroke-width: 100;   /* slightly thicker than guide/progress */
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        #guide-path {
+            fill: none;
+            stroke: #ffffff; /* match white border so joints blend */
+            stroke-width: 90;      /* was ~40 → now VERY bold */
+            stroke-dasharray: 42 40;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        #progress-path {
+            fill: none;
+            stroke: #ff6eb4;
+            stroke-width: 82;      /* was ~34 → now bold */
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            stroke-dasharray: 0 1;
+            filter: drop-shadow(0 0 14px rgba(255,110,180,0.7));
+            pointer-events: none;
+        }
+
+        #letter-outline {
+            fill: none;
+            stroke: #ff4a9d;
+            stroke-width: 18;      /* was ~10 → helps frame the bold stroke */
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* sparkle */
+        .tracing-sparkle {
+            fill: #fff;
+            stroke: #ffd75a;
+            stroke-width: 3;
+            filter: drop-shadow(0 0 6px rgba(255,215,90,0.9));
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .tracing-sparkle.on {
+            opacity: 1;
+        }
+
+        .tracing-stage { z-index: 10; }
+        .tracing-svg { z-index: 11; }
+
+        #guide-path,
+        #progress-path,
+        #letter-outline,
+        #sparkle-dot {
+            z-index: 12;
+        }
+
+        /* Arrow cues */
+        .trace-arrow {
+            fill: none;
+            stroke: #ffbf4f;
+            stroke-width: 3;
+            pointer-events: none;
+        }
+
+        /* Start and end dots with pulsing animation */
+        .trace-marker {
+            pointer-events: none;
+        }
+
+        .trace-marker.start {
+            fill: #4ade80;
+            stroke: #22c55e;
+            stroke-width: 2;
+            animation: pulseStart 1.5s ease-in-out infinite;
+        }
+
+        .trace-marker.end {
+            fill: #f87171;
+            stroke: #ef4444;
+            stroke-width: 2;
+            animation: pulseEnd 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulseStart {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.2);
+            }
+        }
+
+        @keyframes pulseEnd {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.7;
+                transform: scale(1.2);
+            }
+        }
+
+        /* Celebration animation */
+        .celebrate-zoom {
+            animation: zoomCelebrate 0.9s ease-out forwards;
+            transform-origin: center;
+        }
+
+        @keyframes zoomCelebrate {
+            0%   { transform: scale(1);   filter: drop-shadow(0 0 0px rgba(255,255,255,0)); }
+            30%  { transform: scale(1.15); filter: drop-shadow(0 0 20px rgba(255,255,255,0.9)); }
+            60%  { transform: scale(1.05); filter: drop-shadow(0 0 12px rgba(255,255,255,0.6)); }
+            100% { transform: scale(1);    filter: drop-shadow(0 0 0px rgba(255,255,255,0)); }
+        }
     </style>
 </head>
 <body class="fade-start">
@@ -514,51 +656,66 @@
             <div class="toolbar-actions">
                 <button class="tool-action" onclick="fadeNavigate('Activity1B.html')">1</button>
                 <button class="tool-action" onclick="fadeNavigate('Activity2B.html')">2</button>
-                <button class="tool-action active" onclick="fadeNavigate('Activity3B.html')">3</button>
+                <button class="tool-action" onclick="fadeNavigate('Activity3B.html')">3</button>
                 <button class="tool-action" onclick="fadeNavigate('Activity4B.html')">4</button>
-                <button class="tool-action" onclick="fadeNavigate('Activity5B.html')">5</button>
+                <button class="tool-action active" onclick="fadeNavigate('Activity5B.html')">5</button>
             </div>
             <button class="back-button" aria-label="Go back" onclick="fadeNavigate('index.html');">
                 <img src="images/back-icon.svg" alt="Back" class="back-icon" />
             </button>
         </div>
 
-        <!-- Middle Panel - Forest with Drag-and-Drop Toys -->
+        <!-- Middle Panel - Letter Tracing -->
         <div class="main-panel">
             <img src="images/Mascot-side2b.jpg" class="forest-bg" alt="Forest background" />
-            <div class="toy-stage" id="toy-stage">
-                <!-- Toys at the top - ADJUST POSITIONS TO MATCH FIGMA -->
-                <div class="toy toy-bear float" data-toy="bear">
-                    <img src="images/bear.png" alt="Bear toy" />
-                </div>
-                <div class="toy toy-drum float-delay-1" data-toy="drum">
-                    <img src="images/drum.png" alt="Drum toy" />
-                </div>
-                <div class="toy toy-plane float-delay-2" data-toy="plane">
-                    <img src="images/plane.png" alt="Plane toy" />
-                </div>
-                <div class="toy toy-ball float-delay-3" data-toy="ball">
-                    <img src="images/Ball.png" alt="Ball toy" />
-                </div>
+            <div class="tracing-stage" id="tracing-stage">
+                <svg viewBox="0 -10 300 390" class="tracing-svg" id="tracing-svg">
+                    <defs>
+                        <!-- Arrowhead for direction cues -->
+                        <marker id="trace-arrow-head"
+                                markerWidth="6"
+                                markerHeight="6"
+                                refX="5"
+                                refY="3"
+                                orient="auto">
+                            <!-- simple centered triangle arrow -->
+                            <path d="M0 0 L6 3 L0 6 Z" fill="#ffbf4f" />
+                        </marker>
+                    </defs>
 
-                <!-- Box container near bottom center - ADJUST POSITION TO MATCH FIGMA -->
-                <div class="box-container" id="box-container">
-                    <img src="images/box.png" alt="Box" class="box-image" id="box-image" />
-                    
-                    <!-- In-box images - initially hidden -->
-                    <img src="images/bear-in-box.png" alt="Bear in box" class="toy-in-box" data-toy="bear" />
-                    <img src="images/drum-in-box.png" alt="Drum in box" class="toy-in-box" data-toy="drum" />
-                    <img src="images/plane-in-box.png" alt="Plane in box" class="toy-in-box" data-toy="plane" />
-                    <img src="images/ball-in-box.png" alt="Ball in box" class="toy-in-box" data-toy="ball" />
-                    
-                    <!-- Sparkle effect layer -->
-                    <div class="sparkle-layer" id="sparkle-layer">
-                        <div class="sparkle sparkle-1"></div>
-                        <div class="sparkle sparkle-2"></div>
-                        <div class="sparkle sparkle-3"></div>
-                        <div class="sparkle sparkle-4"></div>
-                    </div>
-                </div>
+                    <!-- White base stroke to smooth out joints -->
+                    <path id="letter-base"
+                        d="M 50 320 L 50 60 L 150 220 L 250 60 L 250 320" />
+
+                    <!-- Outline of M -->
+                    <path id="letter-outline"
+                        d="M 50 320 L 50 60 L 150 220 L 250 60 L 250 320" />
+
+                    <!-- Grey dotted guide -->
+                    <path id="guide-path"
+                        d="M 50 320 L 50 60 L 150 220 L 250 60 L 250 320" />
+
+                    <!-- Pink progress stroke -->
+                    <path id="progress-path"
+                        d="M 50 320 L 50 60 L 150 220 L 250 60 L 250 320" />
+
+                    <!-- Arrow cues along the path (pointer-events disabled in CSS) -->
+                    <path class="trace-arrow"
+                          d="M 50 305 L 50 235"
+                          marker-end="url(#trace-arrow-head)" />
+                    <path class="trace-arrow"
+                          d="M 60 80 L 140 210"
+                          marker-end="url(#trace-arrow-head)" />
+                    <path class="trace-arrow"
+                          d="M 240 80 L 240 255"
+                          marker-end="url(#trace-arrow-head)" />
+
+                    <!-- Start dot -->
+                    <circle id="start-dot" class="trace-marker start" r="10" cx="50" cy="320" />
+
+                    <!-- Sparkle dot that follows the finger -->
+                    <circle id="sparkle-dot" class="tracing-sparkle" r="9" cx="50" cy="320" />
+                </svg>
             </div>
         </div>
 
@@ -566,9 +723,10 @@
         <div class="side-panel">
             <img src="images/Mascot-side.jpg" class="panel-image" alt="Mascot" />
             <div class="text-content">
-                <p>Look at the toys!</p>
-                <p>Can you find the one that starts with B…</p>
-                <p>drag it into the B box?</p>
+                <p>Emm… emm… M</p>
+                <p>Time to make an M!</p>
+                <p>Slide your finger along the lines</p>
+                <p>trace the letter</p>
             </div>
         </div>
     </div>
@@ -587,146 +745,133 @@
             }, 150);
         }
 
-        // Drag-and-drop logic
-        const toyStage = document.getElementById('toy-stage');
-        const boxContainer = document.getElementById('box-container');
-        const boxImage = document.getElementById('box-image');
-        const sparkleLayer = document.getElementById('sparkle-layer');
-        const toys = document.querySelectorAll('.toy');
-        
-        let hasDroppedOnce = false;
-        let activeDrag = null;
-        let dragOffset = { x: 0, y: 0 };
+        // ===== Activity5B: Letter M tracing JS =====
 
-        // Store initial positions for snap-back
-        const initialPositions = new Map();
-        toys.forEach(toy => {
-            const rect = toy.getBoundingClientRect();
-            const stageRect = toyStage.getBoundingClientRect();
-            initialPositions.set(toy, {
-                left: toy.offsetLeft,
-                top: toy.offsetTop
-            });
-        });
+        const svg = document.getElementById('tracing-svg');
+        const guidePath = document.getElementById('guide-path');
+        const progressPath = document.getElementById('progress-path');
+        const sparkle = document.getElementById('sparkle-dot');
+        const startDot = document.getElementById('start-dot');
+        const arrows = document.querySelectorAll('.trace-arrow');
 
-        // Check if two rectangles overlap
-        function checkOverlap(rect1, rect2) {
-            return !(
-                rect1.right < rect2.left ||
-                rect1.left > rect2.right ||
-                rect1.bottom < rect2.top ||
-                rect1.top > rect2.bottom
-            );
-        }
+        if (svg && guidePath && progressPath && sparkle) {
+            const totalLength = guidePath.getTotalLength();
 
-        // Handle pointer down (start drag)
-        function handlePointerDown(e) {
-            if (hasDroppedOnce) return;
-            if (e.target.closest('.toy').classList.contains('disabled')) return;
+            progressPath.style.strokeDasharray = totalLength;
+            progressPath.style.strokeDashoffset = totalLength;
 
-            const toy = e.target.closest('.toy');
-            if (!toy) return;
+            let maxProgress = 0;
+            let isTracing = false;
 
-            e.preventDefault();
-            activeDrag = toy;
-            
-            const toyRect = toy.getBoundingClientRect();
-            const stageRect = toyStage.getBoundingClientRect();
-            
-            // Calculate offset from pointer to toy's top-left corner
-            dragOffset.x = e.clientX - toyRect.left;
-            dragOffset.y = e.clientY - toyRect.top;
+            function svgPoint(evt) {
+                const rect = svg.getBoundingClientRect();
+                return {
+                    x: evt.clientX - rect.left,
+                    y: evt.clientY - rect.top
+                };
+            }
 
-            toy.classList.add('dragging');
-            toy.setPointerCapture(e.pointerId);
-        }
+            function progressAlongPath(point, samples = 260) {
+                let closestDist = Infinity;
+                let closestLen = 0;
 
-        // Handle pointer move (during drag)
-        function handlePointerMove(e) {
-            if (!activeDrag) return;
+                for (let i = 0; i <= samples; i++) {
+                    const len = (i / samples) * totalLength;
+                    const p = guidePath.getPointAtLength(len);
+                    const dx = p.x - point.x;
+                    const dy = p.y - point.y;
+                    const dist = Math.hypot(dx, dy);
 
-            const stageRect = toyStage.getBoundingClientRect();
-            
-            // Calculate new position relative to toy-stage
-            let newX = e.clientX - stageRect.left - dragOffset.x;
-            let newY = e.clientY - stageRect.top - dragOffset.y;
+                    if (dist < closestDist) {
+                        closestDist = dist;
+                        closestLen = len;
+                    }
+                }
+                return { length: closestLen, distance: closestDist };
+            }
 
-            // Constrain to stage bounds
-            newX = Math.max(0, Math.min(newX, stageRect.width - activeDrag.offsetWidth));
-            newY = Math.max(0, Math.min(newY, stageRect.height - activeDrag.offsetHeight));
+            function startTrace(evt) {
+                evt.preventDefault();
 
-            activeDrag.style.left = newX + 'px';
-            activeDrag.style.top = newY + 'px';
-        }
+                // Only start if we begin near the start of the path (green dot)
+                const startPoint = guidePath.getPointAtLength(0);
+                const pointer = svgPoint(evt);
+                const distStart = Math.hypot(
+                    pointer.x - startPoint.x,
+                    pointer.y - startPoint.y
+                );
 
-        // Handle pointer up (end drag)
-        function handlePointerUp(e) {
-            if (!activeDrag) return;
+                const START_RADIUS = 80; // px tolerance around the start dot
 
-            const toy = activeDrag;
-            const toyRect = toy.getBoundingClientRect();
-            const boxRect = boxContainer.getBoundingClientRect();
-
-            toy.classList.remove('dragging');
-            toy.releasePointerCapture(e.pointerId);
-
-            // Check if toy overlaps with box
-            if (checkOverlap(toyRect, boxRect) && !hasDroppedOnce) {
-                // Successful drop!
-                hasDroppedOnce = true;
-                const toyType = toy.getAttribute('data-toy');
-
-                // Hide the dragged toy
-                toy.classList.add('hidden');
-
-                // Hide the empty box image
-                boxImage.classList.add('hidden');
-
-                // Show the corresponding in-box image
-                const inBoxImage = document.querySelector(`.toy-in-box[data-toy="${toyType}"]`);
-                if (inBoxImage) {
-                    inBoxImage.classList.add('visible');
+                if (distStart > START_RADIUS) {
+                    // Tap was too far from the green dot: don't start tracing
+                    return;
                 }
 
-                // Trigger box impact animation
-                boxContainer.classList.add('impact');
-                boxContainer.addEventListener('animationend', () => {
-                    boxContainer.classList.remove('impact');
-                }, { once: true });
+                isTracing = true;
+                sparkle.classList.add('on');
+                maxProgress = 0;
 
-                // Trigger sparkle animation
-                sparkleLayer.classList.add('sparkle-active');
-                sparkleLayer.addEventListener('animationend', () => {
-                    sparkleLayer.classList.remove('sparkle-active');
-                }, { once: true });
+                // Snap sparkle to the start point of the path
+                sparkle.setAttribute('cx', startPoint.x);
+                sparkle.setAttribute('cy', startPoint.y);
 
-                // Disable all other toys
-                toys.forEach(otherToy => {
-                    if (otherToy !== toy) {
-                        otherToy.classList.add('frozen', 'disabled');
-                    }
-                });
-            } else {
-                // Unsuccessful drop - snap back to original position
-                const initialPos = initialPositions.get(toy);
-                if (initialPos) {
-                    toy.style.left = initialPos.left + 'px';
-                    toy.style.top = initialPos.top + 'px';
+                // Do NOT call updateTrace here; tracing advances only while moving
+                window.addEventListener('pointermove', updateTrace);
+                window.addEventListener('pointerup', endTrace, { once: true });
+                window.addEventListener('pointercancel', endTrace, { once: true });
+            }
+
+            function updateTrace(evt) {
+                if (!isTracing) return;
+
+                const pt = svgPoint(evt);
+                const { length, distance } = progressAlongPath(pt);
+
+                const threshold = 60; // VERY forgiving for children's tracing
+
+                if (distance < threshold) {
+                    if (length > maxProgress) maxProgress = length;
+
+                    progressPath.style.strokeDashoffset = totalLength - maxProgress;
+
+                    const pos = guidePath.getPointAtLength(maxProgress);
+                    sparkle.setAttribute('cx', pos.x);
+                    sparkle.setAttribute('cy', pos.y);
+                } else {
+                    sparkle.setAttribute('cx', pt.x);
+                    sparkle.setAttribute('cy', pt.y);
                 }
             }
 
-            activeDrag = null;
+            function endTrace() {
+                isTracing = false;
+                sparkle.classList.remove('on');
+                window.removeEventListener('pointermove', updateTrace);
+
+                // If we have traced at least 90% of the path, hide the start dot
+                const completionRatio = maxProgress / totalLength;
+                if (completionRatio > 0.9) {
+                    if (startDot) startDot.style.display = 'none';
+
+                    // hide arrows (from Patch 2)
+                    arrows.forEach(a => {
+                        a.style.opacity = '0';
+                        a.style.transition = 'opacity 0.3s ease';
+                    });
+
+                    // apply celebration effect to the WHOLE SVG
+                    svg.classList.add('celebrate-zoom');
+
+                    // remove the class after the animation so it can replay next time
+                    setTimeout(() => {
+                        svg.classList.remove('celebrate-zoom');
+                    }, 1000);
+                }
+            }
+
+            svg.addEventListener('pointerdown', startTrace);
         }
-
-        // Attach event listeners to each toy
-        toys.forEach(toy => {
-            toy.addEventListener('pointerdown', handlePointerDown);
-        });
-
-        // Global pointer move and up handlers
-        document.addEventListener('pointermove', handlePointerMove);
-        document.addEventListener('pointerup', handlePointerUp);
-        document.addEventListener('pointercancel', handlePointerUp);
     </script>
 </body>
 </html>
