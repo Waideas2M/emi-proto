@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity 3B - eMi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #191919;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+            opacity: 1;
+            transition: opacity 0.15s ease;
+        }
+
+        body.fade-start {
+            opacity: 0;
+        }
+
+        body.fade-out {
+            opacity: 0;
+        }
+
+        .activity-page {
+            width: 100vw;
+            height: 100vh;
+            padding: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .sidebar {
+            width: 80px;
+            flex: 0 0 auto;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(37, 41, 45, 1) 0%, rgba(63, 73, 82, 1) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0;
+        }
+
+        .logo-image {
+            width: 80px;
+            height: 80px;
+            display: block;
+            object-fit: contain;
+        }
+
+        .back-button {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 24px auto;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+
+        .back-button:hover {
+            background-color: #191919;
+        }
+
+        .back-button:active {
+            background-color: #191919;
+            border: 1px solid #F8CB16;
+            transform: scale(0.97);
+        }
+
+        .back-icon {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .tool-action {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, transform 0.1s;
+            background-color: rgba(0, 0, 0, 0.2);
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-weight: 700;
+            font-size: 18px;
+            color: #FFFFFF;
+            line-height: 1;
+        }
+
+        .tool-action.active {
+            background-color: #191919;
+            border: 1px solid #F8CB16;
+        }
+
+        .tool-action:hover {
+            background-color: #191919;
+        }
+
+        .tool-action:active {
+            background-color: #191919;
+            border: 1px solid #F8CB16;
+            transform: scale(0.97);
+        }
+
+        .main-panel {
+            flex: 2;
+            min-width: 300px;
+            height: 100%;
+            background-color: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .forest-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            border-radius: inherit;
+            display: block;
+        }
+
+        .toy-stage {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        /* Toy styling - adjust positions to match Figma */
+        .toy {
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            cursor: grab;
+            pointer-events: auto;
+            user-select: none;
+            transition: opacity 0.2s;
+        }
+
+        .toy img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+        }
+
+        .toy.dragging {
+            cursor: grabbing;
+            animation: none !important;
+            z-index: 1000;
+            opacity: 0.9;
+        }
+
+        .toy.frozen {
+            animation: none !important;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .toy.hidden {
+            display: none;
+        }
+
+        .toy.disabled {
+            pointer-events: none;
+            cursor: default;
+        }
+
+        /* Floating animation for toys - gentle vertical bob */
+        .toy.float {
+            animation: floatToy 3.5s ease-in-out infinite;
+        }
+
+        .toy.float-delay-1 {
+            animation: floatToy 3.8s ease-in-out infinite;
+            animation-delay: 0.3s;
+        }
+
+        .toy.float-delay-2 {
+            animation: floatToy 4.1s ease-in-out infinite;
+            animation-delay: 0.6s;
+        }
+
+        .toy.float-delay-3 {
+            animation: floatToy 3.6s ease-in-out infinite;
+            animation-delay: 0.9s;
+        }
+
+        @keyframes floatToy {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-6px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        /* Placeholder positions - ADJUST THESE TO MATCH FIGMA */
+        .toy.toy-bear {
+            top: 15%;
+            left: 10%;
+        }
+
+        .toy.toy-drum {
+            top: 15%;
+            left: 30%;
+        }
+
+        .toy.toy-plane {
+            top: 15%;
+            left: 50%;
+        }
+
+        .toy.toy-ball {
+            top: 15%;
+            left: 70%;
+        }
+
+        /* Box container - ADJUST POSITION TO MATCH FIGMA */
+        .box-container {
+            position: absolute;
+            bottom: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            pointer-events: auto;
+        }
+
+        .box-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            transition: opacity 0.3s;
+        }
+
+        .box-image.hidden {
+            display: none;
+        }
+
+        .box-container.impact .box-image {
+            animation: boxImpact 0.25s ease-out;
+        }
+
+        @keyframes boxImpact {
+            0% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+            20% {
+                transform: scale(1.08);
+                filter: brightness(1.3);
+            }
+            40% {
+                transform: scale(1.12);
+                filter: brightness(1.5);
+            }
+            60% {
+                transform: scale(1.08);
+                filter: brightness(1.3);
+            }
+            100% {
+                transform: scale(1);
+                filter: brightness(1);
+            }
+        }
+
+        .toy-in-box {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: block;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .toy-in-box.visible {
+            opacity: 1;
+        }
+
+        .sparkle-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .sparkle-layer::before,
+        .sparkle-layer::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 200, 0.8) 30%, rgba(255, 255, 255, 0) 70%);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.9), 0 0 30px rgba(255, 255, 200, 0.6);
+        }
+
+        .sparkle-layer::before {
+            top: 20%;
+            left: 30%;
+        }
+
+        .sparkle-layer::after {
+            top: 60%;
+            right: 25%;
+        }
+
+        .sparkle-layer.sparkle-active {
+            animation: sparkle 1s ease-out;
+        }
+
+        .sparkle-layer.sparkle-active::before {
+            animation: sparklePulse 1s ease-out;
+        }
+
+        .sparkle-layer.sparkle-active::after {
+            animation: sparklePulse 1s ease-out 0.15s;
+        }
+
+        .sparkle-layer .sparkle {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 150, 0.9) 25%, rgba(255, 255, 255, 0) 65%);
+            border-radius: 50%;
+            box-shadow: 0 0 12px rgba(255, 255, 255, 1), 0 0 24px rgba(255, 255, 200, 0.8), 0 0 36px rgba(255, 255, 150, 0.4);
+            opacity: 0;
+        }
+
+        .sparkle-layer.sparkle-active .sparkle-1 {
+            top: 15%;
+            left: 25%;
+            animation: sparklePulse 1s ease-out 0.1s;
+        }
+
+        .sparkle-layer.sparkle-active .sparkle-2 {
+            top: 35%;
+            right: 20%;
+            animation: sparklePulse 1s ease-out 0.2s;
+        }
+
+        .sparkle-layer.sparkle-active .sparkle-3 {
+            bottom: 30%;
+            left: 35%;
+            animation: sparklePulse 1s ease-out 0.3s;
+        }
+
+        .sparkle-layer.sparkle-active .sparkle-4 {
+            top: 50%;
+            right: 30%;
+            animation: sparklePulse 1s ease-out 0.25s;
+        }
+
+        @keyframes sparkle {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            30% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+            60% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.5);
+            }
+        }
+
+        @keyframes sparklePulse {
+            0% {
+                opacity: 0;
+                transform: scale(0.3) rotate(0deg);
+                filter: brightness(1);
+            }
+            25% {
+                opacity: 1;
+                transform: scale(1.3) rotate(90deg);
+                filter: brightness(1.5);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1) rotate(180deg);
+                filter: brightness(2);
+            }
+            75% {
+                opacity: 0.8;
+                transform: scale(1.2) rotate(270deg);
+                filter: brightness(1.5);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.8) rotate(360deg);
+                filter: brightness(1);
+            }
+        }
+
+        .side-panel {
+            flex: 0 0 auto;
+            width: 304px;
+            min-width: 200px;
+            max-width: 400px;
+            height: 100%;
+            background-color: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .panel-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            border-radius: inherit;
+            display: block;
+        }
+
+        .text-content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 40px;
+            pointer-events: none;
+        }
+
+        .text-content p {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            line-height: 1.4;
+            letter-spacing: -0.02em;
+            color: #191919;
+            text-align: left;
+            margin: 0;
+            width: 100%;
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 1024px) {
+            .side-panel {
+                min-width: 150px;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body class="fade-start">
+    <div class="activity-page">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <img src="images/eMi Logo.svg" alt="eMi logo" class="logo-image" />
+            <div class="toolbar-actions">
+                <button class="tool-action" aria-label="Action 1" onclick="fadeNavigate('Activity1B.html');">1</button>
+                <button class="tool-action" aria-label="Action 2" onclick="fadeNavigate('Activity2B.html');">2</button>
+                <button class="tool-action active" aria-label="Action 3" onclick="fadeNavigate('Activity3B.html');">3</button>
+            </div>
+            <button class="back-button" aria-label="Go back" onclick="fadeNavigate('index.html');">
+                <img src="images/back-icon.svg" alt="Back" class="back-icon" />
+            </button>
+        </div>
+
+        <!-- Middle Panel - Forest with Drag-and-Drop Toys -->
+        <div class="main-panel">
+            <img src="images/Mascot-side2b.jpg" class="forest-bg" alt="Forest background" />
+            <div class="toy-stage" id="toy-stage">
+                <!-- Toys at the top - ADJUST POSITIONS TO MATCH FIGMA -->
+                <div class="toy toy-bear float" data-toy="bear">
+                    <img src="images/bear.png" alt="Bear toy" />
+                </div>
+                <div class="toy toy-drum float-delay-1" data-toy="drum">
+                    <img src="images/drum.png" alt="Drum toy" />
+                </div>
+                <div class="toy toy-plane float-delay-2" data-toy="plane">
+                    <img src="images/plane.png" alt="Plane toy" />
+                </div>
+                <div class="toy toy-ball float-delay-3" data-toy="ball">
+                    <img src="images/Ball.png" alt="Ball toy" />
+                </div>
+
+                <!-- Box container near bottom center - ADJUST POSITION TO MATCH FIGMA -->
+                <div class="box-container" id="box-container">
+                    <img src="images/box.png" alt="Box" class="box-image" id="box-image" />
+                    
+                    <!-- In-box images - initially hidden -->
+                    <img src="images/bear-in-box.png" alt="Bear in box" class="toy-in-box" data-toy="bear" />
+                    <img src="images/drum-in-box.png" alt="Drum in box" class="toy-in-box" data-toy="drum" />
+                    <img src="images/plane-in-box.png" alt="Plane in box" class="toy-in-box" data-toy="plane" />
+                    <img src="images/ball-in-box.png" alt="Ball in box" class="toy-in-box" data-toy="ball" />
+                    
+                    <!-- Sparkle effect layer -->
+                    <div class="sparkle-layer" id="sparkle-layer">
+                        <div class="sparkle sparkle-1"></div>
+                        <div class="sparkle sparkle-2"></div>
+                        <div class="sparkle sparkle-3"></div>
+                        <div class="sparkle sparkle-4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Mascot Illustration -->
+        <div class="side-panel">
+            <img src="images/Mascot-side.jpg" class="panel-image" alt="Mascot" />
+            <div class="text-content">
+                <p>Look at the toys!</p>
+                <p>Can you find the one that starts with B…</p>
+                <p>drag it into the B box?</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fade in on page load
+        window.addEventListener('load', () => {
+            document.body.classList.remove('fade-start');
+        });
+
+        // Helper for fade + navigate
+        function fadeNavigate(url) {
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = url;
+            }, 150);
+        }
+
+        // Drag-and-drop logic
+        const toyStage = document.getElementById('toy-stage');
+        const boxContainer = document.getElementById('box-container');
+        const boxImage = document.getElementById('box-image');
+        const sparkleLayer = document.getElementById('sparkle-layer');
+        const toys = document.querySelectorAll('.toy');
+        
+        let hasDroppedOnce = false;
+        let activeDrag = null;
+        let dragOffset = { x: 0, y: 0 };
+
+        // Store initial positions for snap-back
+        const initialPositions = new Map();
+        toys.forEach(toy => {
+            const rect = toy.getBoundingClientRect();
+            const stageRect = toyStage.getBoundingClientRect();
+            initialPositions.set(toy, {
+                left: toy.offsetLeft,
+                top: toy.offsetTop
+            });
+        });
+
+        // Check if two rectangles overlap
+        function checkOverlap(rect1, rect2) {
+            return !(
+                rect1.right < rect2.left ||
+                rect1.left > rect2.right ||
+                rect1.bottom < rect2.top ||
+                rect1.top > rect2.bottom
+            );
+        }
+
+        // Handle pointer down (start drag)
+        function handlePointerDown(e) {
+            if (hasDroppedOnce) return;
+            if (e.target.closest('.toy').classList.contains('disabled')) return;
+
+            const toy = e.target.closest('.toy');
+            if (!toy) return;
+
+            e.preventDefault();
+            activeDrag = toy;
+            
+            const toyRect = toy.getBoundingClientRect();
+            const stageRect = toyStage.getBoundingClientRect();
+            
+            // Calculate offset from pointer to toy's top-left corner
+            dragOffset.x = e.clientX - toyRect.left;
+            dragOffset.y = e.clientY - toyRect.top;
+
+            toy.classList.add('dragging');
+            toy.setPointerCapture(e.pointerId);
+        }
+
+        // Handle pointer move (during drag)
+        function handlePointerMove(e) {
+            if (!activeDrag) return;
+
+            const stageRect = toyStage.getBoundingClientRect();
+            
+            // Calculate new position relative to toy-stage
+            let newX = e.clientX - stageRect.left - dragOffset.x;
+            let newY = e.clientY - stageRect.top - dragOffset.y;
+
+            // Constrain to stage bounds
+            newX = Math.max(0, Math.min(newX, stageRect.width - activeDrag.offsetWidth));
+            newY = Math.max(0, Math.min(newY, stageRect.height - activeDrag.offsetHeight));
+
+            activeDrag.style.left = newX + 'px';
+            activeDrag.style.top = newY + 'px';
+        }
+
+        // Handle pointer up (end drag)
+        function handlePointerUp(e) {
+            if (!activeDrag) return;
+
+            const toy = activeDrag;
+            const toyRect = toy.getBoundingClientRect();
+            const boxRect = boxContainer.getBoundingClientRect();
+
+            toy.classList.remove('dragging');
+            toy.releasePointerCapture(e.pointerId);
+
+            // Check if toy overlaps with box
+            if (checkOverlap(toyRect, boxRect) && !hasDroppedOnce) {
+                // Successful drop!
+                hasDroppedOnce = true;
+                const toyType = toy.getAttribute('data-toy');
+
+                // Hide the dragged toy
+                toy.classList.add('hidden');
+
+                // Hide the empty box image
+                boxImage.classList.add('hidden');
+
+                // Show the corresponding in-box image
+                const inBoxImage = document.querySelector(`.toy-in-box[data-toy="${toyType}"]`);
+                if (inBoxImage) {
+                    inBoxImage.classList.add('visible');
+                }
+
+                // Trigger box impact animation
+                boxContainer.classList.add('impact');
+                boxContainer.addEventListener('animationend', () => {
+                    boxContainer.classList.remove('impact');
+                }, { once: true });
+
+                // Trigger sparkle animation
+                sparkleLayer.classList.add('sparkle-active');
+                sparkleLayer.addEventListener('animationend', () => {
+                    sparkleLayer.classList.remove('sparkle-active');
+                }, { once: true });
+
+                // Disable all other toys
+                toys.forEach(otherToy => {
+                    if (otherToy !== toy) {
+                        otherToy.classList.add('frozen', 'disabled');
+                    }
+                });
+            } else {
+                // Unsuccessful drop - snap back to original position
+                const initialPos = initialPositions.get(toy);
+                if (initialPos) {
+                    toy.style.left = initialPos.left + 'px';
+                    toy.style.top = initialPos.top + 'px';
+                }
+            }
+
+            activeDrag = null;
+        }
+
+        // Attach event listeners to each toy
+        toys.forEach(toy => {
+            toy.addEventListener('pointerdown', handlePointerDown);
+        });
+
+        // Global pointer move and up handlers
+        document.addEventListener('pointermove', handlePointerMove);
+        document.addEventListener('pointerup', handlePointerUp);
+        document.addEventListener('pointercancel', handlePointerUp);
+    </script>
+</body>
+</html>
+

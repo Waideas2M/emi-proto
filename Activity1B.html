@@ -20,7 +20,7 @@
             margin: 0;
             padding: 0;
             opacity: 1;
-            transition: opacity 0.25s ease;
+            transition: opacity 0.15s ease;
         }
 
         body.fade-start {
@@ -263,7 +263,7 @@
             <div class="toolbar-actions">
                 <button class="tool-action active" aria-label="Action 1" onclick="fadeNavigate('Activity1B.html');">1</button>
                 <button class="tool-action" aria-label="Action 2" onclick="fadeNavigate('Activity2B.html');">2</button>
-                <button class="tool-action" aria-label="Action 3">3</button>
+                <button class="tool-action" aria-label="Action 3" onclick="fadeNavigate('Activity3B.html');">3</button>
             </div>
             <button class="back-button" aria-label="Go back" onclick="fadeNavigate('index.html');">
                 <img src="images/back-icon.svg" alt="Back" class="back-icon" />
@@ -302,7 +302,7 @@
             document.body.classList.add('fade-out');
             setTimeout(() => {
                 window.location.href = url;
-            }, 250);
+            }, 150);
         }
 
         const playgroundContainer = document.querySelector('.playground-container');

@@ -20,7 +20,7 @@
             margin: 0;
             padding: 0;
             opacity: 1;
-            transition: opacity 0.25s ease;
+            transition: opacity 0.15s ease;
         }
 
         body.fade-start {
@@ -357,7 +357,7 @@
             <div class="toolbar-actions">
                 <button class="tool-action" aria-label="Action 1" onclick="fadeNavigate('Activity1B.html');">1</button>
                 <button class="tool-action active" aria-label="Action 2" onclick="fadeNavigate('Activity2B.html');">2</button>
-                <button class="tool-action" aria-label="Action 3">3</button>
+                <button class="tool-action" aria-label="Action 3" onclick="fadeNavigate('Activity3B.html');">3</button>
             </div>
             <button class="back-button" aria-label="Go back" onclick="fadeNavigate('index.html');">
                 <img src="images/back-icon.svg" alt="Back" class="back-icon" />
@@ -393,7 +393,7 @@
             document.body.classList.add('fade-out');
             setTimeout(() => {
                 window.location.href = url;
-            }, 250);
+            }, 150);
         }
 
         // Bubble creation and interaction
@@ -404,6 +404,7 @@
         const bubbleSize = 160;
         const padding = 32;
         const placedBubbles = [];
+        let hasBubblePopped = false;
 
         function checkOverlap(x, y, size) {
             const radius = size / 2;
@@ -458,30 +459,31 @@
             // Store position for overlap checking
             placedBubbles.push({ x: position.x, y: position.y });
 
-            // All bubbles have press feedback, but only A pops
-            if (letter === "A") {
-                bubble.addEventListener('click', function() {
-                    if (bubble.classList.contains('popping')) return;
+            // All bubbles can be clicked to pop, but only one can pop
+            bubble.addEventListener('click', function() {
+                // If already popping or a bubble has already been popped, don't pop
+                if (bubble.classList.contains('popping') || hasBubblePopped) return;
 
-                    // remove float classes instead of overriding animation
-                    bubble.classList.remove(
-                        'float',
-                        'float-delay-1',
-                        'float-delay-2',
-                        'float-delay-3',
-                        'float-delay-4',
-                        'float-delay-5'
-                    );
+                // Mark that a bubble has been popped
+                hasBubblePopped = true;
 
-                    bubble.classList.add('popping');
+                // remove float classes instead of overriding animation
+                bubble.classList.remove(
+                    'float',
+                    'float-delay-1',
+                    'float-delay-2',
+                    'float-delay-3',
+                    'float-delay-4',
+                    'float-delay-5'
+                );
 
-                    bubble.addEventListener('animationend', () => {
-                        bubble.remove();
-                    }, { once: true });
-                });
-            }
-            // Other bubbles (C, E, Ö, M, Ä) just have press feedback (handled by :active CSS)
-            // No additional JS needed for press feedback
+                bubble.classList.add('popping');
+
+                bubble.addEventListener('animationend', () => {
+                    bubble.remove();
+                }, { once: true });
+            });
+            // All bubbles have press feedback (handled by :active CSS)
 
             bubbleStage.appendChild(bubble);
         }
