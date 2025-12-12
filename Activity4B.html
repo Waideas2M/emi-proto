@@ -588,6 +588,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.20);
             
             pointer-events: none; /* important */
+            animation: dotPulse 1.6s ease-in-out infinite;
         }
 
         /* Optional press feedback (feels nice for kids) */
@@ -595,10 +596,57 @@
             transform: translate(-50%, -50%) scale(1.1);
         }
 
+        /* Stop pulsing once a handle is connected */
+        .card-handle.connected .handle-dot {
+            animation: none !important;
+        }
+
+        .card-handle.hover-target .handle-dot {
+            box-shadow: 0 0 0 6px rgba(244,200,64,0.35), 0 6px 14px rgba(0,0,0,0.25);
+            animation: none !important;
+        }
+
         /* Position the 72px hit area so its CENTER aligns where the old 32px dot used to be */
         .card-left .card-handle  { right: -36px; }  /* - (72/2) */
 
         .card-right .card-handle { left: -36px; }   /* - (72/2) */
+
+        /* Micro ghost hint — teaches "drag from here", not the answer */
+        .micro-ghost {
+            position: absolute;
+            top: 50%;
+            width: 14px;          /* smaller than before */
+            height: 4px;
+            background: rgba(244, 200, 64, 0.8);
+            border-radius: 2px;
+            transform: translateY(-50%);
+            opacity: 0;
+            pointer-events: none;
+            animation: microGhostPulse 3s ease-in-out infinite;
+        }
+
+        /* Attach micro-ghost to DOT edge (dot is centered at 50%, radius ~16px) */
+        .card-left .micro-ghost {
+            left: calc(50% + 16px);     /* start at dot edge */
+        }
+
+        .card-right .micro-ghost {
+            left: calc(50% - 16px - 14px); /* 14px = micro-ghost width */
+        }
+
+        @keyframes microGhostPulse {
+            0%   { opacity: 0; }
+            20%  { opacity: 0.8; }
+            50%  { opacity: 0.8; }
+            80%  { opacity: 0; }
+            100% { opacity: 0; }
+        }
+
+        @keyframes dotPulse {
+            0%   { transform: translate(-50%, -50%) scale(1); }
+            50%  { transform: translate(-50%, -50%) scale(1.12); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
 
         .card-connected {
             transform: scale(1.03);
@@ -688,6 +736,7 @@
                         </div>
                         <button class="card-handle" type="button" aria-label="Connect elephant">
                             <span class="handle-dot"></span>
+                            <span class="micro-ghost"></span>
                         </button>
                     </div>
 
@@ -697,6 +746,7 @@
                         </div>
                         <button class="card-handle" type="button" aria-label="Connect ice cream">
                             <span class="handle-dot"></span>
+                            <span class="micro-ghost"></span>
                         </button>
                     </div>
 
@@ -707,6 +757,7 @@
                         </div>
                         <button class="card-handle" type="button" aria-label="Connect rabbit">
                             <span class="handle-dot"></span>
+                            <span class="micro-ghost"></span>
                         </button>
                     </div>
 
@@ -716,6 +767,7 @@
                         </div>
                         <button class="card-handle" type="button" aria-label="Connect mouse">
                             <span class="handle-dot"></span>
+                            <span class="micro-ghost"></span>
                         </button>
                     </div>
 
@@ -726,6 +778,7 @@
                         </div>
                         <button class="card-handle" type="button" aria-label="Connect sun">
                             <span class="handle-dot"></span>
+                            <span class="micro-ghost"></span>
                         </button>
                     </div>
 
@@ -735,6 +788,7 @@
                         </div>
                         <button class="card-handle" type="button" aria-label="Connect turtle">
                             <span class="handle-dot"></span>
+                            <span class="micro-ghost"></span>
                         </button>
                     </div>
                 </div>
@@ -774,6 +828,47 @@
         let connectionLayer = null;
         let handles = [];
 
+        let hoverTargetHandle = null;
+        const SNAP_RADIUS = 60; // forgiving for kids, roughly >= hit area radius
+
+        function setHoverTarget(next) {
+            if (hoverTargetHandle === next) return;
+
+            if (hoverTargetHandle) hoverTargetHandle.classList.remove('hover-target');
+
+            hoverTargetHandle = next;
+
+            if (hoverTargetHandle) hoverTargetHandle.classList.add('hover-target');
+        }
+
+        function findNearestTargetHandle(clientX, clientY, sourceHandle) {
+            const pt = toSvgCoords(clientX, clientY);
+
+            let best = null;
+            let bestDist = Infinity;
+
+            for (const h of handles) {
+                if (h === sourceHandle) continue;
+
+                // only allow left ↔ right targets
+                const sourceCard = sourceHandle.closest('.card');
+                const targetCard = h.closest('.card');
+                const sourceIsLeft = sourceCard.classList.contains('card-left');
+                const targetIsLeft = targetCard.classList.contains('card-left');
+                if (sourceIsLeft === targetIsLeft) continue;
+
+                const c = getHandleCenter(h);
+                const d = Math.hypot(pt.x - c.x, pt.y - c.y);
+
+                if (d < bestDist) {
+                    bestDist = d;
+                    best = h;
+                }
+            }
+
+            return bestDist <= SNAP_RADIUS ? best : null;
+        }
+
         function toSvgCoords(clientX, clientY) {
             const svgRect = connectionLayer.getBoundingClientRect();
             return {
@@ -810,6 +905,8 @@
             [leftHandle, rightHandle].forEach(h => {
                 const card = h.closest('.card');
                 if (card) card.classList.remove('card-connected');
+                // Remove connected class to re-enable pulsing
+                h.classList.remove('connected');
             });
         }
 
@@ -842,6 +939,12 @@
                 if (card) card.classList.add('card-connected');
             });
 
+            // Mark handles as connected and remove micro-ghost
+            leftHandle.classList.add('connected');
+            rightHandle.classList.add('connected');
+            leftHandle.querySelector('.micro-ghost')?.remove();
+            rightHandle.querySelector('.micro-ghost')?.remove();
+
             path.addEventListener('animationend', () => {
                 path.classList.remove('pulse');
             }, { once: true });
@@ -863,6 +966,8 @@
             if (connectionLayer && handles.length) {
                 handles.forEach(handle => {
                 handle.addEventListener('pointerdown', e => {
+                    handle.querySelector('.micro-ghost')?.remove();
+                    setHoverTarget(null); // clear any previous hover state
                     e.preventDefault();
                     activeSourceHandle = handle;
 
@@ -887,6 +992,8 @@
 
                     const move = evt => {
                         updateActiveLine(evt.clientX, evt.clientY);
+                        const near = findNearestTargetHandle(evt.clientX, evt.clientY, activeSourceHandle);
+                        setHoverTarget(near);
                     };
 
                     const up = evt => {
@@ -895,13 +1002,15 @@
                         handle.removeEventListener('pointerup', up);
                         handle.removeEventListener('pointercancel', up);
 
-                        const targetElem = document.elementFromPoint(evt.clientX, evt.clientY);
-                        const targetHandle = targetElem && targetElem.closest('.card-handle');
+                        const targetHandle =
+                            hoverTargetHandle ||
+                            (document.elementFromPoint(evt.clientX, evt.clientY)?.closest('.card-handle'));
 
                         if (!targetHandle || targetHandle === activeSourceHandle) {
                             if (activeLine && activeLine.parentNode) {
                                 activeLine.parentNode.removeChild(activeLine);
                             }
+                            setHoverTarget(null);
                             resetActive();
                             return;
                         }
@@ -916,6 +1025,7 @@
                             if (activeLine && activeLine.parentNode) {
                                 activeLine.parentNode.removeChild(activeLine);
                             }
+                            setHoverTarget(null);
                             resetActive();
                             return;
                         }
@@ -924,6 +1034,7 @@
                         const rightHandle = sourceIsLeft ? targetHandle : activeSourceHandle;
 
                         createConnection(leftHandle, rightHandle, activeLine);
+                        setHoverTarget(null);
                         resetActive();
                     };
 
