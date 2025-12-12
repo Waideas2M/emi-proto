@@ -558,28 +558,47 @@
             margin: auto;
         }
 
+        /* Invisible hit area */
         .card-handle {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
+            
+            width: 72px;   /* BIG tap area */
+            height: 72px;
+            
+            background: transparent;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+
+        /* Visible dot (unchanged size) */
+        .card-handle .handle-dot {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            
             width: 32px;
             height: 32px;
             border-radius: 50%;
-            border: none;
+            
             background: rgba(255, 255, 255, 0.95);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.20);
-            cursor: pointer;
-            transition: transform 0.12s ease-out, box-shadow 0.12s ease-out;
+            
+            pointer-events: none; /* important */
         }
 
-        .card-left .card-handle  { right: -16px; }
-
-        .card-right .card-handle { left: -16px; }
-
-        .card-handle:active {
-            transform: translateY(-50%) scale(0.92);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+        /* Optional press feedback (feels nice for kids) */
+        .card-handle:active .handle-dot {
+            transform: translate(-50%, -50%) scale(1.1);
         }
+
+        /* Position the 72px hit area so its CENTER aligns where the old 32px dot used to be */
+        .card-left .card-handle  { right: -36px; }  /* - (72/2) */
+
+        .card-right .card-handle { left: -36px; }   /* - (72/2) */
 
         .card-connected {
             transform: scale(1.03);
@@ -667,29 +686,37 @@
                         <div class="card-inner">
                             <img src="images/elephant.png" alt="Elephant">
                         </div>
-                        <button class="card-handle" type="button" aria-label="Connect elephant"></button>
+                        <button class="card-handle" type="button" aria-label="Connect elephant">
+                            <span class="handle-dot"></span>
+                        </button>
                     </div>
 
                     <div class="card card-right" data-id="icecream">
                         <div class="card-inner">
                             <img src="images/icecream.png" alt="Ice cream">
                         </div>
-                        <button class="card-handle" type="button" aria-label="Connect ice cream"></button>
+                        <button class="card-handle" type="button" aria-label="Connect ice cream">
+                            <span class="handle-dot"></span>
+                        </button>
                     </div>
 
                     <!-- Row 2 -->
-                    <div class="card card-left" data-id="cheetha">
+                    <div class="card card-left" data-id="rabbit">
                         <div class="card-inner">
-                            <img src="images/cheetha.png" alt="Mouse">
+                            <img src="images/rabbit.png" alt="Rabbit">
                         </div>
-                        <button class="card-handle" type="button" aria-label="Connect mouse"></button>
+                        <button class="card-handle" type="button" aria-label="Connect rabbit">
+                            <span class="handle-dot"></span>
+                        </button>
                     </div>
 
                     <div class="card card-right" data-id="mouse">
                         <div class="card-inner">
-                            <img src="images/mouse.png" alt="Cheetah">
+                            <img src="images/mouse.png" alt="Mouse">
                         </div>
-                        <button class="card-handle" type="button" aria-label="Connect cheetah"></button>
+                        <button class="card-handle" type="button" aria-label="Connect mouse">
+                            <span class="handle-dot"></span>
+                        </button>
                     </div>
 
                     <!-- Row 3 -->
@@ -697,14 +724,18 @@
                         <div class="card-inner">
                             <img src="images/sun.png" alt="Sun">
                         </div>
-                        <button class="card-handle" type="button" aria-label="Connect sun"></button>
+                        <button class="card-handle" type="button" aria-label="Connect sun">
+                            <span class="handle-dot"></span>
+                        </button>
                     </div>
 
                     <div class="card card-right" data-id="turtle">
                         <div class="card-inner">
                             <img src="images/turtle.png" alt="Turtle">
                         </div>
-                        <button class="card-handle" type="button" aria-label="Connect turtle"></button>
+                        <button class="card-handle" type="button" aria-label="Connect turtle">
+                            <span class="handle-dot"></span>
+                        </button>
                     </div>
                 </div>
             </div>
